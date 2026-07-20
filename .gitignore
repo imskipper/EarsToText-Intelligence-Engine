@@ -5,3 +5,4 @@ __pycache__/
 .env
 active_cache_*
 .streamlit/secrets.toml
+.idea/
