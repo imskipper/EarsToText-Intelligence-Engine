@@ -1,4 +1,4 @@
-# OmniSpeech-ATS-Pipeline (OmniAudio Intelligence Platform)
+# OmniSpeech-Pipeline-Engine(OmniAudio Intelligence Platform)
 
 An end-to-end, multi-stage speech intelligence pipeline that converts raw audio into high-confidence transcripts, detailed acoustic profiles, PII-redacted text, and schema-validated structured semantic reports.
 
