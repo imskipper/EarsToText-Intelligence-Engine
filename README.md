@@ -1,4 +1,5 @@
-# OmniSpeech-Pipeline-Engine(OmniAudio Intelligence Platform)
+
+# EarsToText-Intelligence-Engine
 
 An end-to-end, multi-stage speech intelligence pipeline that converts raw audio into high-confidence transcripts, detailed acoustic profiles, PII-redacted text, and schema-validated structured semantic reports.
 
@@ -12,7 +13,7 @@ An end-to-end, multi-stage speech intelligence pipeline that converts raw audio 
 
 ## 💡 Overview
 
-**OmniSpeech-ATS-Pipeline** provides a full-spectrum audio analytics platform designed for compliance-sensitive environments, customer interaction analysis, and automated triage.
+**EarsToText-Intelligence-Engine** provides a full-spectrum audio analytics platform designed for compliance-sensitive environments, customer interaction analysis, and automated triage.
 
 The pipeline combines whisper-based ASR with signal-processing acoustic algorithms (`librosa`), strict local regex-based PII redaction, and schema-validated LLM extraction (`instructor`) to extract both **what was said** and **how it was said** safely and accurately.
 
@@ -20,10 +21,10 @@ The pipeline combines whisper-based ASR with signal-processing acoustic algorith
 
 ## 🏗️ Architecture & Pipeline Flow
 
-~~~text
+```text
    [ Raw Audio Input ]
-           │
-           ▼
+            │
+            ▼
 ┌───────────────────────┐
 │     ASR Engine        │  ► faster-whisper + Silero VAD
 │                       │  ► Segment & word-level confidence + timestamps
@@ -32,11 +33,11 @@ The pipeline combines whisper-based ASR with signal-processing acoustic algorith
      ┌─────┴────────────────────────┐
      ▼                              ▼
 ┌─────────────────────────┐  ┌─────────────────────────┐
-│  Acoustic Analytics     │  │   PII Redaction Engine  │
-│  ► Frame-level RMS      │  │   ► Pre-LLM scrubbing   │
-│  ► PyIN Pitch (F0)      │  │   ► Emails, phones, SSNs│
-│  ► Jitter & Shimmer     │  │   ► Dosages & accounts  │
-│  ► Cross-talk regions   │  └──────────┬──────────────┘
+│   Acoustic Analytics    │  │   PII Redaction Engine  │
+│   ► Frame-level RMS     │  │   ► Pre-LLM scrubbing   │
+│   ► PyIN Pitch (F0)     │  │   ► Emails, phones, SSNs│
+│   ► Jitter & Shimmer    │  │   ► Dosages & accounts  │
+│   ► Cross-talk regions  │  └──────────┬──────────────┘
 └─────────────────────────┘             │
                                         ▼
                              ┌─────────────────────────┐
@@ -52,28 +53,34 @@ The pipeline combines whisper-based ASR with signal-processing acoustic algorith
                              │    ► Heatmaps & Metrics │
                              │    ► Capability Registry│
                              └─────────────────────────┘
-~~~
+
+```
 
 ---
 
 ## ✨ Key Features & Modules
 
 ### 1. 🎙️ High-Precision ASR Engine (`asr_engine.py`)
+
 * Powered by **`faster-whisper`** with integrated **Voice Activity Detection (VAD)** filtering.
 * Extracts segment-level and word-level timestamps with token confidence scores.
 
 ### 2. 📊 Acoustic & Signal Processing (`acoustic.py`)
+
 * **Voice Quality Metrics:** Uses `librosa.pyin` for fundamental frequency tracking, computing exact **jitter** (pitch instability) and **shimmer** (amplitude variation).
 * **Cross-Talk & Energy Spike Analysis:** RMS-based frame evaluation detects audio clipping, loud energy bursts, and potential cross-talk regions across overlapping segments.
 
 ### 3. 🛡️ Local PII Redaction Layer (`redaction.py`)
+
 * **Deterministic & Privacy-First:** Redacts sensitive Personal Identifiable Information (PII)—including email addresses, phone numbers, SSNs, financial account IDs, and medical dosages—*before* sending text off-device.
 
 ### 4. 🧠 Schema-Validated Semantic Analytics (`analytics.py`)
+
 * Built with **`instructor`** on top of OpenAI models to force strictly validated outputs.
 * Extracts key entities, technical jargon, urgency triage levels, and actionable call summaries.
 
 ### 5. 🎛️ Interactive Streamlit Interface (`web_app/main.py`)
+
 * Real-time transcript visualization with word-confidence heatmaps.
 * **Capability Registry Pattern:** Explicitly surfaces engine state (active vs. unconfigured modules like diarization or supervised emotion) rather than silently failing.
 
@@ -97,27 +104,36 @@ The pipeline combines whisper-based ASR with signal-processing acoustic algorith
 ### Installation
 
 1. **Clone the repository:**
-   ~~~bash
-   git clone https://github.com/imskipper/OmniSpeech-ATS-Pipeline.git
-   cd OmniSpeech-ATS-Pipeline
-   ~~~
+```bash
+git clone [https://github.com/imskipper/EarsToText-Intelligence-Engine.git](https://github.com/imskipper/EarsToText-Intelligence-Engine.git)
+cd EarsToText-Intelligence-Engine
+
+```
+
 
 2. **Create and activate a virtual environment:**
-   ~~~bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
-   ~~~
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+
+```
+
 
 3. **Install dependencies:**
-   ~~~bash
-   pip install -r requirements.txt
-   ~~~
+```bash
+pip install -r requirements.txt
+
+```
+
 
 4. **Set up Environment Variables:**
-   Create a `.env` file in the root directory:
-   ~~~env
-   OPENAI_API_KEY=your_openai_api_key_here
-   ~~~
+Create a `.env` file in the root directory:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+
+```
+
+
 
 ---
 
@@ -125,24 +141,26 @@ The pipeline combines whisper-based ASR with signal-processing acoustic algorith
 
 Run the Streamlit web application:
 
-~~~bash
+```bash
 streamlit run web_app/main.py
-~~~
+
+```
 
 ### Running Tests
 
 Execute the unit test suite:
 
-~~~bash
+```bash
 pytest
-~~~
+
+```
 
 ---
 
 ## 🛣️ Capabilities & Roadmap
 
 | Feature | Status | Implementation Details |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | **VAD & ASR** | ✅ Active | `faster-whisper` + Silero |
 | **Pitch & Jitter Analysis** | ✅ Active | `librosa.pyin` RMS frame analysis |
 | **PII Redaction** | ✅ Active | Local regex-based deterministic scrubber |
@@ -154,4 +172,4 @@ pytest
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
