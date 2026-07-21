@@ -18,9 +18,34 @@ from core.capabilities import CapabilityRegistry
 from core.redaction import EntityRedactor
 from core.reporting import build_research_report, summarize_acoustic_context
 
-st.set_page_config(page_title="OmniAudio Intelligence Platform", layout="wide")
+# ==========================================
+# 1. PAGE CONFIG & CUSTOM CSS
+# ==========================================
+st.set_page_config(
+    page_title="EarsToText-Intelligence-Engine",
+    page_icon="🎧",
+    layout="wide"
+)
+
+st.markdown("""
+    <style>
+    /* Global Page Padding */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    /* Metric Card Styling */
+    div[data-testid="stMetricValue"] {
+        font-size: 24px;
+        color: #FF4B4B;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 
+# ==========================================
+# 2. CACHED RESOURCES
+# ==========================================
 @st.cache_resource
 def get_asr_engine():
     return OptimizedASRPipeline()
@@ -73,10 +98,19 @@ def render_confidence_heatmap(words):
     st.markdown("".join(html_parts), unsafe_allow_html=True)
 
 
-st.title("OmniAudio Intelligence Platform")
-st.markdown("*Production-Grade End-to-End Speech Decoding & Analytics Engine*")
+# ==========================================
+# 3. HEADER & SIDEBAR
+# ==========================================
+st.title("🎧 EarsToText-Intelligence-Engine")
+st.caption("Production-Grade End-to-End Speech Decoding & Analytics Engine")
 st.markdown("---")
 
+if not settings.has_openai_api_key:
+    st.sidebar.warning("⚠️ `OPENAI_API_KEY` is not configured in `.env`. Semantic analytics will be skipped.")
+
+# ==========================================
+# 4. MAIN LAYOUT
+# ==========================================
 left_panel, right_panel = st.columns([1, 1])
 
 with left_panel:
@@ -86,7 +120,7 @@ with left_panel:
     if audio_file:
         st.audio(audio_file)
 
-        if st.button("Execute Pipeline Ingestion", use_container_width=True):
+        if st.button("Execute Pipeline Ingestion", use_container_width=True, type="primary"):
             suffix = os.path.splitext(audio_file.name)[1]
             runtime_path = None
 
@@ -111,11 +145,11 @@ with left_panel:
                     with st.spinner("Generating structured semantic report..."):
                         analytics_engine = get_analytics_engine()
                         acoustic_context = summarize_acoustic_context(acoustic_data)
-                        report_data = analytics_engine.analyze_transcript(redaction_data["redacted_text"], acoustic_context)
+                        report_data = analytics_engine.analyze_transcript(redaction_data["redacted_text"],
+                                                                          acoustic_context)
                         st.session_state["report_data"] = report_data.model_dump()
                 else:
                     st.session_state.pop("report_data", None)
-                    st.warning("OPENAI_API_KEY is not configured. Transcript completed; analytics report skipped.")
 
                 st.session_state["research_report"] = build_research_report(
                     st.session_state["asr_data"],
@@ -170,10 +204,13 @@ with right_panel:
             st.markdown(f"- [ ] {step}")
     else:
         if settings.has_openai_api_key:
-            st.warning("Awaiting Ingestion Pipeline Trigger.")
+            st.info("Awaiting Ingestion Pipeline Trigger.")
         else:
-            st.info("Set OPENAI_API_KEY in .env to enable structured semantic reporting.")
+            st.info("Semantic reporting is disabled (API Key missing).")
 
+# ==========================================
+# 5. TABS & VISUALIZATIONS
+# ==========================================
 if "asr_data" in st.session_state:
     st.markdown("---")
     tab_timeline, tab_acoustic, tab_confidence, tab_capabilities = st.tabs(
@@ -183,12 +220,26 @@ if "asr_data" in st.session_state:
     with tab_timeline:
         acoustic = st.session_state.get("acoustic_data", {})
         timeline = acoustic.get("speaker_timeline", [])
+
+        with st.expander("ℹ️ Diarization Note"):
+            st.caption(
+                "Speaker labels are marked Unknown until a diarization backend such as PyAnnote or SpeechBrain is configured.")
+
         if timeline:
-            st.dataframe(pd.DataFrame(timeline), use_container_width=True, hide_index=True)
+            df_transcript = pd.DataFrame(timeline)
+            st.dataframe(
+                df_transcript,
+                column_config={
+                    "speaker": st.column_config.TextColumn("Speaker", width="small"),
+                    "start": st.column_config.NumberColumn("Start (s)", format="%.2f s", width="small"),
+                    "end": st.column_config.NumberColumn("End (s)", format="%.2f s", width="small"),
+                    "text": st.column_config.TextColumn("Transcript Text", width="large"),
+                },
+                hide_index=True,
+                use_container_width=True
+            )
         else:
             st.info("No speech timeline is available for this clip.")
-
-        st.caption("Speaker labels are marked Unknown until a diarization backend such as PyAnnote or SpeechBrain is configured.")
 
     with tab_acoustic:
         acoustic = st.session_state.get("acoustic_data", {})
@@ -237,11 +288,14 @@ if "asr_data" in st.session_state:
             "as explicit extension points instead of failing at startup."
         )
 
+# ==========================================
+# 6. DOWNLOAD REPORT
+# ==========================================
 if "research_report" in st.session_state:
     st.download_button(
         "Download Research Report JSON",
         data=json.dumps(st.session_state["research_report"], indent=2),
-        file_name="omnispeech_research_report.json",
+        file_name="earstotext_research_report.json",
         mime="application/json",
         use_container_width=True,
     )
